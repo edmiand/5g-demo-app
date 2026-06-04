@@ -17,33 +17,17 @@ _DEMO_ACTIONS = [
     cl.Action(
         name="health_snapshot",
         label="🏥 Health Snapshot",
-        payload={
-            "prompt": (
-                "Run a full health snapshot of the 5G core network and report "
-                "the status of every network function."
-            )
-        },
+        payload={"prompt": "Call system_health_snapshot now."},
     ),
     cl.Action(
         name="watch_attach",
         label="👀 Watch Subscriber Attach",
-        payload={
-            "prompt": (
-                "List all active UE sessions and show me which subscribers are "
-                "currently attached to the network."
-            )
-        },
+        payload={"prompt": "Call list_ue_sessions now."},
     ),
     cl.Action(
         name="debug_failure",
         label="🔍 Debug Attach Failure",
-        payload={
-            "prompt": (
-                "A subscriber cannot attach to the network. Run a health snapshot, "
-                "tail the relevant NF logs to find the root cause, fix the issue, "
-                "and verify recovery."
-            )
-        },
+        payload={"prompt": "Call system_health_snapshot now."},
     ),
 ]
 
