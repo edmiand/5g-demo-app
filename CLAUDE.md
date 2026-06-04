@@ -49,6 +49,7 @@ All tool calls stream visibly as Steps in the Chainlit UI.
 
 ## Constraints
 - Chainlit 2.x is installed — use v2 API only, not v1 patterns
+- Do NOT hand-write .chainlit/config.toml — delete it and let Chainlit regenerate it, then patch settings in
 - Do not modify anything on VM1
 - Do not hardcode IPs or URLs — always read from config/mcp.yaml
 - Do not hardcode model names — always read from config/models.yaml
