@@ -25,9 +25,13 @@ All tool calls stream visibly as Steps in the Chainlit UI.
 ## MCP tools available on VM1
 - nf_lifecycle          start/stop/restart/status any Open5GS NF
 - system_health_snapshot one-shot health check of all NFs
-- subscriber_crud        CRUD on subscriber profiles in MongoDB
+- subscriber_crud        CRUD on subscriber profiles in MongoDB (supports filter param)
 - list_ue_sessions       list active UE registrations and PDU sessions
 - tail_nf_logs           filtered log reads from NF log files
+- read_nf_config         read parsed YAML config for any NF
+  - read_nf_config("amf")                    → full config (keys: logger, global, amf)
+  - read_nf_config("amf", "amf.sbi.server.0") → subtree/index path
+  - bad path → returns available sibling keys (explorable); bad NF → clear error
 
 ## Open5GS paths on VM1 (read-only reference)
 - Logs:    /home/dmandrey/open5gs/install/var/log/open5gs/<nf>.log
