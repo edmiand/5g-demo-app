@@ -1,11 +1,12 @@
+import base64
 import re
 import shutil
-import subprocess
 import tempfile
 import uuid
 import yaml
 from pathlib import Path
 
+import httpx
 import chainlit as cl
 from langchain_core.messages import HumanMessage
 
@@ -14,7 +15,6 @@ from agent.mcp_bridge import get_mcp_tools
 from agent.graph import create_agent
 
 _MERMAID_RE = re.compile(r"```mermaid\n(.*?)```", re.DOTALL)
-_PUPPETEER_CFG = Path(__file__).parent / "config" / "puppeteer-config.json"
 
 _BRANDING_PATH = Path(__file__).parent / "config" / "branding.yaml"
 
@@ -115,40 +115,37 @@ async def on_message(message: cl.Message):
     await _run_agent(message.content)
 
 
-def _render_mermaid_blocks(msg: cl.Message) -> list[str]:
-    """Render ```mermaid blocks in msg.content to PNG via mmdc.
+async def _render_mermaid_blocks(msg: cl.Message) -> list[str]:
+    """Fetch PNG renders of ```mermaid blocks from mermaid.ink and embed inline.
 
-    Replaces each fenced block with an inline cl.Image element.
     Returns a list of temp dirs to clean up after the message is sent.
     """
     matches = list(_MERMAID_RE.finditer(msg.content))
     if not matches:
         return []
 
-    mmdc = shutil.which("mmdc")
-    if not mmdc:
-        return []
-
     tmp_dirs: list[str] = []
     images: list[cl.Image] = []
     clean_content = msg.content
 
-    for i, match in enumerate(matches):
-        mermaid_text = match.group(1).strip()
-        tmp_dir = Path(tempfile.mkdtemp())
-        tmp_dirs.append(str(tmp_dir))
-        src = tmp_dir / "diagram.mmd"
-        out = tmp_dir / "diagram.png"
-        src.write_text(mermaid_text)
+    async with httpx.AsyncClient(timeout=15) as client:
+        for i, match in enumerate(matches):
+            mermaid_text = match.group(1).strip()
+            encoded = base64.urlsafe_b64encode(mermaid_text.encode()).decode()
+            url = f"https://mermaid.ink/img/{encoded}"
 
-        cmd = [mmdc, "-i", str(src), "-o", str(out), "-b", "white"]
-        if _PUPPETEER_CFG.exists():
-            cmd += ["--puppeteerConfigFile", str(_PUPPETEER_CFG)]
-        result = subprocess.run(cmd, capture_output=True)
+            tmp_dir = Path(tempfile.mkdtemp())
+            tmp_dirs.append(str(tmp_dir))
+            out = tmp_dir / "diagram.png"
 
-        if result.returncode == 0 and out.exists():
-            images.append(cl.Image(path=str(out), name=f"call_flow_{i}", display="inline"))
-            clean_content = clean_content.replace(match.group(0), "")
+            try:
+                resp = await client.get(url)
+                if resp.status_code == 200:
+                    out.write_bytes(resp.content)
+                    images.append(cl.Image(path=str(out), name=f"call_flow_{i}", display="inline"))
+                    clean_content = clean_content.replace(match.group(0), "")
+            except Exception:
+                pass  # leave raw mermaid block if fetch fails
 
     if images:
         msg.content = clean_content.strip()
@@ -221,7 +218,7 @@ async def _run_agent(user_input: str):
         else:
             final_msg.content = f"❌ **Agent error:** {root_cause}"
 
-    tmp_dirs = _render_mermaid_blocks(final_msg)
+    tmp_dirs = await _render_mermaid_blocks(final_msg)
     await final_msg.update()
     for d in tmp_dirs:
         shutil.rmtree(d, ignore_errors=True)
