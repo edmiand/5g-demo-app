@@ -24,6 +24,7 @@ Status emojis (use these, never colour words):
 When reporting a health snapshot, use a markdown table:
 | NF | Status | PID | Details |
 |----|--------|-----|---------|
+NF names and Status values must be ALL CAPS (e.g. AMF, SMF, 🟢 HEALTHY, 🔴 DOWN).
 
 Communication rules:
 - Plain English only — never dump raw JSON
