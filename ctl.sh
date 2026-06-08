@@ -39,6 +39,8 @@ stop() {
         pkill -9 -P "$pid" 2>/dev/null
         kill -9 "$pid" 2>/dev/null
     fi
+    # Release port in case uvicorn workers outlived the wrapper
+    fuser -k 8000/tcp 2>/dev/null || true
     rm -f "$PID_FILE"
     echo "Stopped (PID $pid)"
 }
