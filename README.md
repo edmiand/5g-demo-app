@@ -19,7 +19,7 @@ operations tools, diagnoses faults, and streams every step visibly in the UI.
 ```
 
 **VM2 stack:** Python 3.11+ · Chainlit 2.x · LangGraph · langchain-mcp-adapters · Ollama  
-**VM1 stack:** Open5GS · MCP SSE server exposing 5 network operations tools
+**VM1 stack:** Open5GS · MCP SSE server exposing 7 network operations tools
 
 ---
 
@@ -33,6 +33,7 @@ operations tools, diagnoses faults, and streams every step visibly in the UI.
 | `list_ue_sessions` | List all active UE registrations and PDU sessions |
 | `subscriber_crud` | Create / read / update / delete subscriber profiles in MongoDB |
 | `read_nf_config` | Read parsed YAML config for any NF (explorable subtree path) |
+| `trace` | Capture a live 5G call flow and render it as a sequence diagram |
 
 ---
 
@@ -158,9 +159,11 @@ python test_integration.py
 ### 9. Start the app
 
 ```bash
-source .venv/bin/activate
-python start.py                    # binds to 0.0.0.0:8000 by default
-# or: python start.py --host 0.0.0.0 --port 8000
+./ctl.sh start          # start in background, logs → chainlit.log
+./ctl.sh status         # check it's running
+./ctl.sh logs           # tail -f the log
+./ctl.sh stop           # graceful stop + port release
+./ctl.sh restart        # stop then start
 ```
 
 Open **http://\<VM2-IP\>:8000** in a browser.
@@ -204,13 +207,11 @@ If the VM already has Python 3.11+, Ollama, and a model pulled:
 ```bash
 git clone git@github.com:edmiand/5g-demo-app.git
 cd 5g-demo-app
-python3 -m venv .venv
-source .venv/bin/activate
+python3 -m venv .venv && source .venv/bin/activate
 pip install -e .
 cp .env.example .env
 # Edit config/mcp.yaml → set VM1 address
-# Edit config/models.yaml → set active model
-python start.py
+./ctl.sh start
 ```
 
 ---
@@ -242,16 +243,19 @@ servers:
 
 ```
 app.py                  # Chainlit entry point — chat lifecycle + streaming
+start.py               # Wrapper: syncs branding.yaml → config.toml, then launches Chainlit
+ctl.sh                 # Process manager: start / stop / restart / status / logs
 agent/
   llm.py               # LangChain model loader (reads config/models.yaml)
   mcp_bridge.py        # SSE client via MultiServerMCPClient
   graph.py             # LangGraph ReAct agent (create_react_agent)
 config/
   models.yaml          # Model registry and active model selection
-  mcp.yaml             # MCP server URL
+  mcp.yaml             # MCP server URL (update VM1 IP here)
+  branding.yaml        # Agent name, welcome title, logo file
 prompts/
   system.txt           # Agent system prompt — behaviour rules and formatting
-.env.example           # Environment template (copy to .env)
+.env.example           # Environment template (copy to .env — OLLAMA_API_KEY=ollama)
 test_integration.py    # 3-check integration test (LLM · MCP · agent round-trip)
 ```
 
@@ -302,7 +306,7 @@ active: gpt-oss:20b-cloud   # or gemma4:31b-cloud
 # No ollama pull needed — these models run in the cloud
 
 # Restart the app
-python start.py
+./ctl.sh restart
 ```
 
 ---
