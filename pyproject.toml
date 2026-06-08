@@ -7,17 +7,14 @@ name = "5g-demo-app"
 version = "0.1.0"
 requires-python = ">=3.11"
 dependencies = [
-    "chainlit>=1.3.0",
-    "langchain>=0.3.0",
-    "langgraph>=0.2.0",
-    "langchain-openai>=0.2.0",
-    "langchain-mcp-adapters>=0.1.0",
-    "mcp>=1.0.0",
-    "plotly>=5.24.0",
+    "chainlit>=2.11.0",
+    "langgraph>=1.2.0",
+    "langchain-openai>=1.2.0",
+    "langchain-mcp-adapters>=0.2.0",
+    "mcp>=1.27.0",
     "python-dotenv>=1.0.0",
     "pyyaml>=6.0",
     "httpx>=0.27.0",
-    "httpx-sse>=0.4.0",
 ]
 
 [project.optional-dependencies]
