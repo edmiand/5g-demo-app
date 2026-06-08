@@ -46,7 +46,7 @@ _SCENARIO_ACTIONS = [
     cl.Action(
         name="debug_failure",
         label="🔍 Debug Attach Failure",
-        payload={"prompt": "Call system_health_snapshot now."},
+        payload={"prompt": "A subscriber cannot attach to the 5G core. Investigate the root cause: check NF health, tail logs for any degraded or down functions, read their config if the logs are ambiguous, then tell me exactly what is wrong and what to do to fix it."},
     ),
 ]
 
@@ -65,7 +65,7 @@ async def set_starters():
         ),
         cl.Starter(
             label="🔍 Debug Attach Failure",
-            message="Call system_health_snapshot now.",
+            message="A subscriber cannot attach to the 5G core. Investigate the root cause: check NF health, tail logs for any degraded or down functions, read their config if the logs are ambiguous, then tell me exactly what is wrong and what to do to fix it.",
         ),
     ]
 
