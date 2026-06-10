@@ -1,4 +1,4 @@
-# Rogers Network Agent
+# Network Agent
 
 An agentic AI assistant for managing a live **Open5GS 5G core network**.
 The agent autonomously chains tool calls to diagnose issues, remediate faults,

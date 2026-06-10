@@ -95,7 +95,7 @@ reaction_on_message_received = false
 
 [UI]
 # Name of the assistant.
-name = "Rogers Network Agent"
+name = "Network Agent"
 
 default_theme = "dark"
 
@@ -157,7 +157,7 @@ logo_file_url = ""
 
 # Load assistant avatar image directly from URL.
 # Filename is also set in config/branding.yaml — keep them in sync.
-default_avatar_file_url = "/public/logos/rogers-logo.svg"
+default_avatar_file_url = "/public/logos/m2skz_logo.jpeg"
 
 # Avatar size in pixels (default: 20).
 # avatar_size = 20
