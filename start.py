@@ -11,6 +11,7 @@ import sys
 import subprocess
 import yaml
 from pathlib import Path
+from dotenv import load_dotenv
 
 ROOT = Path(__file__).parent
 
@@ -18,7 +19,7 @@ ROOT = Path(__file__).parent
 def sync_branding():
     branding = yaml.safe_load((ROOT / "config" / "branding.yaml").read_text())
     agent_name = branding.get("agent_name", "5G Core Agent")
-    logo_file = branding.get("logo_file", "rogers-logo.svg")
+    logo_file = branding.get("logo_file") or ""
 
     config_path = ROOT / ".chainlit" / "config.toml"
     content = config_path.read_text()
@@ -29,19 +30,30 @@ def sync_branding():
         content,
         flags=re.MULTILINE,
     )
-    content = re.sub(
-        r'^(default_avatar_file_url\s*=\s*)".*"',
-        lambda m: f'{m.group(1)}"/public/logos/{logo_file}"',
-        content,
-        flags=re.MULTILINE,
-    )
+    if logo_file:
+        content = re.sub(
+            r'^(default_avatar_file_url\s*=\s*)".*"',
+            lambda m: f'{m.group(1)}"/public/logos/{logo_file}"',
+            content,
+            flags=re.MULTILINE,
+        )
+    else:
+        content = re.sub(
+            r'^(default_avatar_file_url\s*=\s*)".*"',
+            lambda m: f'{m.group(1)}""',
+            content,
+            flags=re.MULTILINE,
+        )
 
     config_path.write_text(content)
-    print(f"Branding synced → name: {agent_name!r}, logo: {logo_file}")
+    print(f"Branding synced → name: {agent_name!r}, logo: {logo_file or '(default)'}")
 
 
 if __name__ == "__main__":
+    load_dotenv()
     sync_branding()
+    from data_layer import init_database
+    init_database()
     extra_args = sys.argv[1:] or ["--host", "0.0.0.0", "--port", "8000"]
     sys.exit(
         subprocess.call(
